@@ -7,9 +7,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const generateAccessAndRefereshTokens = async(userId) => {
     try {
         const user = await User.findById(userId)
+        console.log(user);
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
-
+        console.log(accessToken, refreshToken);
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
 
@@ -129,7 +130,7 @@ const loginUser = asyncHandler(async(req, res) => {
     //requesting data
     const {username, email, password} = req.body
 
-    if(!username || !email){
+    if(!username && !email){
         throw new ApiError(400, "username or email is required")
     }
 
@@ -137,6 +138,8 @@ const loginUser = asyncHandler(async(req, res) => {
         $or : [{email}, {username}]
     })
 
+    console.log(username);
+    console.log(email);
     if(!user){
         throw new ApiError(404, "user doesnot exist")
     }
@@ -172,22 +175,17 @@ const loginUser = asyncHandler(async(req, res) => {
     )
 })
 
-const logOutUser = asyncHandler(async(req,res) => {
-    /**
-     * find user
-     */
+const logOutUser = asyncHandler(async(req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
-            },
-            
+            $unset: {
+                refreshToken: 1 // this removes the field from document
+            }
         },
         {
             new: true
-        },
-
+        }
     )
 
     const options = {
@@ -195,9 +193,11 @@ const logOutUser = asyncHandler(async(req,res) => {
         secure: true
     }
 
-    return res.status(200).clearCookie("accessToken", options)
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged out successfully"))
+    .json(new ApiResponse(200, {}, "User logged Out"))
 })
 
 export {
