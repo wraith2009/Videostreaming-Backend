@@ -7,6 +7,10 @@ dotenv.config({path: './.env'})
 
 connectDB()
 .then(() => {
+    console.log("database connection established");
+    app.on('error', (err)=> {
+        console.log("connection error" + err.message);
+    })
     app.listen(process.env.PORT || 8000, () => {
         console.log(`server is running at ${process.env.PORT}`);
     })
@@ -15,6 +19,11 @@ connectDB()
     console.log("DB conntection failed !!", err);
 })
 
+/**
+ * using then and catch if database connection is failed then catch
+ * will display the error message and we use then after connection 
+ * DB and will use app.listen after using this our server will start.
+ */
 
 
 
