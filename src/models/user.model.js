@@ -50,6 +50,8 @@ const userSchema = new Schema(
     },{timestamps: true}
 );
 
+//here we are writing normal function because arrow function doesnot have this context.
+
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
@@ -62,13 +64,17 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 userSchema.methods.generateAccessToken = function(){
-    return jwt.sign({
+    return jwt.sign(
+        {
+        //payload
         _id: this._id,
         email: this.email,
         username: this.username
     },
+    //access token
     process.env.ACCESS_TOKEN_SECRET,
     {
+        //expiry object
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY
     }
 )
